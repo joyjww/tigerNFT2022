@@ -1,0 +1,24 @@
+{
+  "avatars": [
+    {
+      "id": 0,
+      "title": "punk-0000",
+      "generate": false
+    },
+    {
+      "id": 1,
+      "title": "punk-0001",
+      "generate": true
+    },
+    {
+      "id": 2,
+      "title": "punk-0002",
+      "generate": true
+    },
+    {
+      "id": 3,
+      "title": "punk-0003",
+      "generate": false
+    }
+  ]
+}
