@@ -10,7 +10,7 @@ function Header() {
             <nav>
           <a
            className='mainHeader'
-            href="http://localhost:3000"
+            href="http://joyjww.github.io/cryptopunks"
             target="_blank"
             rel="noopener noreferrer"
           >

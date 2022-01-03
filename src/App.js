@@ -15,20 +15,39 @@ import BlockchainContext from './BlockchainContext';
 function App() {
   const [number, setNumber] = useState(0);
   const [toggleshow, setToggleshow] = useState(false);
-  const [avatars, setAvatars] = useState([]);
+  const [avatars, setAvatars] = useState([{
+    "id": 0,
+    "title": "punk-0000",
+    "generate": false
+  },
+  {
+    "id": 1,
+    "title": "punk-0001",
+    "generate": false
+  },
+  {
+    "id": 2,
+    "title": "punk-0002",
+    "generate": false
+  },
+  {
+    "id": 3,
+    "title": "punk-0003",
+    "generate": false
+  }]);
   const [web3, setWeb3] = useState(undefined)
   const [accounts, setAccounts] = useState([]);
   const [contract, setContract] = useState(undefined)
   const [minted, setMinted] = useState(false);
 
-  useEffect(() => {
-    const getAvatars = async () => {
-      const avatarsFromServer = await fetchAvatars()
-      setAvatars(avatarsFromServer)
-    }
+  // useEffect(() => {
+  //   const getAvatars = async () => {
+  //     const avatarsFromServer = await fetchAvatars()
+  //     setAvatars(avatarsFromServer)
+  //   }
 
-    getAvatars()
-  }, [])
+  //   getAvatars()
+  // }, [])
 
   useEffect(() => {
     const init = async () => {
@@ -64,7 +83,7 @@ function App() {
     };
 
     async function listenMMAccount() {
-      window.ethereum.on("accountsChanged", async function(accounts) {
+      window.ethereum.on("accountsChanged", async function (accounts) {
         // Time to reload your interface with accounts[0]!
         const Accounts = accounts
         // accounts = await web3.eth.getAccounts();
@@ -76,12 +95,12 @@ function App() {
     listenMMAccount();
   }, [web3, contract, accounts])
 
-  const fetchAvatars = async () => {
-    const res = await fetch('http://localhost:5000/avatars/')
-    const data = await res.json()
+  // const fetchAvatars = async () => {
+  //   const res = await fetch('http://localhost:5000/avatars/')
+  //   const data = await res.json()
 
-    return data
-  }
+  //   return data
+  // }
 
   const fetchAvatar = async (number) => {
     const res = await fetch(`http://localhost:5000/avatars/${number}`)
@@ -96,34 +115,34 @@ function App() {
   //  回头看一下 function mint是怎么回事
 
   const onClick = async () => {
-    const avatarToChange = await fetchAvatar(Math.floor(Math.random() * 4))
+    const avatarToChange = avatars(Math.floor(Math.random() * 4))
     setNumber(avatarToChange.id)
     const response = await contract.methods.getExists(avatarToChange.title).call()
     setMinted(response)
-    console.log(avatarToChange.title, response)
+    // console.log(avatarToChange.title, response)
     setToggleshow(!toggleshow)
   }
 
   const mint = async () => {
-    const avatarToChange = await fetchAvatar(number)
+    const avatarToChange = avatars(number)
     await contract.methods.Claim(avatarToChange.title).send({ from: accounts[0] })
     const response = await contract.methods.getExists(avatarToChange.title).call()
     setMinted(response)
-    console.log(avatarToChange.title, response)
+    // console.log(avatarToChange.title, response)
   }
 
   return (
     <div className="App">
-            <BlockchainContext.Provider value={{ web3, accounts, contract }}>
+      <BlockchainContext.Provider value={{ web3, accounts, contract }}>
         <Header />
         <h1>Mint your new Avatar</h1>
         <div>
-        {toggleshow ? (<Image avatars={avatars} number={number} />) : (<img src={UnknownAvatar} alt="Your avatar should be displayed here."></img>)}
+          {toggleshow ? (<Image avatars={avatars} number={number} />) : (<img src={UnknownAvatar} alt="Your avatar should be displayed here."></img>)}
         </div>
         <GenerateButton reverseBack={reverseBack} onClick={onClick} toggleshow={toggleshow} />
         <MintButton mint={mint} minted={minted} />
-        </BlockchainContext.Provider>
-        <Footer />
+      </BlockchainContext.Provider>
+      <Footer />
     </div>
   );
 }
