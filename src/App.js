@@ -13,138 +13,119 @@ import getWeb3 from './getWeb3';
 import BlockchainContext from './BlockchainContext';
 
 function App() {
-  const [number, setNumber] = useState(0);
+  const [id, setId] = useState(undefined);
   const [toggleshow, setToggleshow] = useState(false);
-  const [avatars, setAvatars] = useState([{
-    "id": 0,
-    "title": "punk-0000",
-    "generate": false
-  },
-  {
-    "id": 1,
-    "title": "punk-0001",
-    "generate": false
-  },
-  {
-    "id": 2,
-    "title": "punk-0002",
-    "generate": false
-  },
-  {
-    "id": 3,
-    "title": "punk-0003",
-    "generate": false
-  }]);
   const [web3, setWeb3] = useState(undefined)
   const [accounts, setAccounts] = useState([]);
   const [contract, setContract] = useState(undefined)
   const [minted, setMinted] = useState(false);
 
   // useEffect(() => {
-  //   const getAvatars = async () => {
-  //     const avatarsFromServer = await fetchAvatars()
-  //     setAvatars(avatarsFromServer)
-  //   }
+    //   const getAvatars = async () => {
+    //     const avatarsFromServer = await fetchAvatars()
+    //     setAvatars(avatarsFromServer)
+    //   }
 
-  //   getAvatars()
-  // }, [])
+    //   getAvatars()
+    // }, [])
 
-  useEffect(() => {
-    const init = async () => {
+    useEffect(() => {
+      const init = async () => {
 
-      try {
-        // Get network provider and web3 instance.
-        const web3 = await getWeb3();
+        try {
+          // Get network provider and web3 instance.
+          const web3 = await getWeb3();
 
-        // Use web3 to get the user's accounts.
-        const accounts = await web3.eth.getAccounts();
+          // Use web3 to get the user's accounts.
+          const accounts = await web3.eth.getAccounts();
 
-        // Get the contract instance.
-        const networkId = await web3.eth.net.getId();
-        const deployedNetwork = Cryptopunks.networks[networkId];
-        const instance = new web3.eth.Contract(
-          Cryptopunks.abi,
-          deployedNetwork && deployedNetwork.address,
-        );
+          // Get the contract instance.
+          const networkId = await web3.eth.net.getId();
+          const deployedNetwork = Cryptopunks.networks[networkId];
+          const instance = new web3.eth.Contract(
+            Cryptopunks.abi,
+            deployedNetwork && deployedNetwork.address,
+          );
 
-        // Set web3, accounts, and contract to the state, and then proceed with an
-        // example of interacting with the contract's methods.
-        setWeb3(web3);
-        setAccounts(accounts);
-        setContract(instance);
+          // Set web3, accounts, and contract to the state, and then proceed with an
+          // example of interacting with the contract's methods.
+          setWeb3(web3);
+          setAccounts(accounts);
+          setContract(instance);
 
-      } catch (error) {
-        // Catch any errors for any of the above operations.
-        alert(
-          `Failed to load web3, accounts, or contract. Check console for details.`,
-        );
-        console.error(error);
+        } catch (error) {
+          // Catch any errors for any of the above operations.
+          alert(
+            `Failed to load web3, accounts, or contract. Check console for details.`,
+          );
+          console.error(error);
+        }
+      };
+
+      async function listenMMAccount() {
+        window.ethereum.on("accountsChanged", async function (accounts) {
+          // Time to reload your interface with accounts[0]!
+          const Accounts = accounts
+          // accounts = await web3.eth.getAccounts();
+          setAccounts(Accounts);
+        });
       }
-    };
 
-    async function listenMMAccount() {
-      window.ethereum.on("accountsChanged", async function (accounts) {
-        // Time to reload your interface with accounts[0]!
-        const Accounts = accounts
-        // accounts = await web3.eth.getAccounts();
-        setAccounts(Accounts);
-      });
+      init()
+      listenMMAccount();
+    }, [web3, contract, accounts])
+
+    // const fetchAvatars = async () => {
+    //   const res = await fetch('http://localhost:5000/avatars/')
+    //   const data = await res.json()
+
+    //   return data
+    // }
+
+    // const fetchAvatar = async (number) => {
+    //   const res = await fetch(`http://localhost:5000/avatars/${number}`)
+    //   const data = await res.json()
+
+    //   return data
+    // }
+
+    const reverseBack = async () => {
+      setToggleshow(!toggleshow)
+    }
+    //  回头看一下 function mint是怎么回事
+
+    const onClick = async () => {
+      // const avatarToChange = await fetchAvatar(Math.floor(Math.random() * 4))
+      var ID = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1)
+      setId(ID)
+      const response = await contract.methods.getExists(`tiger-${ID}`).call()
+      setMinted(response)
+      console.log(`tiger-${ID}`, response)
+      setToggleshow(!toggleshow)
     }
 
-    init()
-    listenMMAccount();
-  }, [web3, contract, accounts])
+    const mint = async () => {
+      // const avatarToChange = await fetchAvatar(number)
+      await contract.methods.Claim(`tiger-${id}`).send({ from: accounts[0] })
+      const response = await contract.methods.getExists(`tiger-${id}`).call()
+      setMinted(response)
+      console.log(`tiger-${id}`, response)
+    }
 
-  // const fetchAvatars = async () => {
-  //   const res = await fetch('http://localhost:5000/avatars/')
-  //   const data = await res.json()
-
-  //   return data
-  // }
-
-  const fetchAvatar = async (number) => {
-    const res = await fetch(`http://localhost:5000/avatars/${number}`)
-    const data = await res.json()
-
-    return data
+    return (
+      <div className="App">
+        <BlockchainContext.Provider value={{ web3, accounts, contract }}>
+          <Header />
+          <h1>Mint your new Avatar</h1>
+          <div>
+            {toggleshow ? (<Image id={id} />) : (<img src={UnknownAvatar} alt="Your avatar should be displayed here."></img>)}
+          </div>
+          <GenerateButton reverseBack={reverseBack} onClick={onClick} toggleshow={toggleshow} />
+          <MintButton mint={mint} minted={minted} />
+        </BlockchainContext.Provider>
+        <Footer />
+      </div>
+    );
   }
-
-  const reverseBack = async () => {
-    setToggleshow(!toggleshow)
-  }
-  //  回头看一下 function mint是怎么回事
-
-  const onClick = async () => {
-    const avatarToChange = avatars(Math.floor(Math.random() * 4))
-    setNumber(avatarToChange.id)
-    const response = await contract.methods.getExists(avatarToChange.title).call()
-    setMinted(response)
-    // console.log(avatarToChange.title, response)
-    setToggleshow(!toggleshow)
-  }
-
-  const mint = async () => {
-    const avatarToChange = avatars(number)
-    await contract.methods.Claim(avatarToChange.title).send({ from: accounts[0] })
-    const response = await contract.methods.getExists(avatarToChange.title).call()
-    setMinted(response)
-    // console.log(avatarToChange.title, response)
-  }
-
-  return (
-    <div className="App">
-      <BlockchainContext.Provider value={{ web3, accounts, contract }}>
-        <Header />
-        <h1>Mint your new Avatar</h1>
-        <div>
-          {toggleshow ? (<Image avatars={avatars} number={number} />) : (<img src={UnknownAvatar} alt="Your avatar should be displayed here."></img>)}
-        </div>
-        <GenerateButton reverseBack={reverseBack} onClick={onClick} toggleshow={toggleshow} />
-        <MintButton mint={mint} minted={minted} />
-      </BlockchainContext.Provider>
-      <Footer />
-    </div>
-  );
-}
 
 export default App;

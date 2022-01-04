@@ -2,7 +2,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'ArcadeClassic', sans-serif;
+  font-family: 'PF Tempesta Five', sans-serif;
 }
 
 /* header format */
@@ -110,3 +110,18 @@ to make sure the image is filled up full, instead of having blank. */
   width: 100%;
 }
 
+.Footer {
+  font-size: medium;
+  padding: 1rem;
+}
+
+.SelfImage {
+  display: inline-block;
+  block-size: 50px 50px;
+}
+
+.About {
+  align-items: center;
+  text-align: center;
+  padding: 1rem;
+}
